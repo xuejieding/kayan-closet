@@ -74,6 +74,26 @@ input.txt{width:100%;background:var(--card);border:2px solid var(--line);border-
 .itile svg{width:100%;height:64px;display:block}
 .itile .nm{font-size:10.5px;font-weight:600;color:var(--ink);line-height:1.2;margin-top:4px}
 .itile.sel{border-color:var(--gold);background:var(--gold-soft);box-shadow:0 0 0 2px var(--gold)}
+.minirow{display:flex;gap:4px;margin-top:6px}
+.minirow button{flex:1;font-size:11.5px;font-weight:700;padding:6px 2px;border-radius:8px;min-height:32px}
+.mk{background:var(--teal-soft);color:var(--teal-dk)}
+.mt{background:var(--brick-soft);color:var(--brick)}
+.itile .hit{display:block;width:100%}
+.itile.exp{grid-column:1/-1;display:flex;gap:14px;align-items:center;text-align:left;padding:12px}
+.itile.exp .hit{flex:0 0 72px}
+.itile.exp .story{flex:1;font-family:Georgia,serif;font-style:italic;font-size:14px;color:var(--mute)}
+.itile.exp .minirow{flex:0 0 190px;margin:0}
+.unbtn{position:absolute;top:2px;left:4px;font-size:12px;opacity:.7}
+#tabs{position:sticky;top:56px;z-index:30;background:var(--ground);display:flex;gap:8px;overflow-x:auto;
+  padding:8px 2px;margin:0 -2px 10px;-webkit-overflow-scrolling:touch}
+.tab{flex:none;border:2px solid var(--line);background:var(--card);border-radius:999px;
+  padding:9px 16px;font-size:14px;font-weight:700;color:var(--ink);min-height:42px;white-space:nowrap}
+.tab.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.tab.none{border-style:dashed}
+.itile.inactive-home{opacity:.55}
+.itile.active-home{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 2px var(--teal)}
+.homebadge{position:absolute;top:2px;left:4px;font-size:10px;background:var(--purple-soft);
+  color:var(--purple-dk);border-radius:8px;padding:1px 6px;font-weight:700}
 .shelf[role=button]{cursor:pointer}
 .shelf[role=button]:hover{border-color:var(--teal)}
 .bg{position:absolute;top:2px;right:5px;font-size:12px}
@@ -1034,7 +1054,12 @@ const W=[
  {s:"swim",c:"#3E8FC1",n:"Swimsuit",st:"Mostly optimism."}
 ].map((x,i)=>({id:i,...x}));
 
-const EXAMPLES=["By colour","By occasion","By season","By memories","By how often I wear it"];
+const EXAMPLES=[
+ {label:"🎨 By colour", cats:["Reds & pinks","Blues","Neutrals","Brights"]},
+ {label:"💼 By occasion", cats:["Work","Casual","Special occasions","Sport & beach"]},
+ {label:"☀️ By season", cats:["Summer","Winter","All-year"]},
+ {label:"💭 By memories", cats:["Precious memories","No story","Complicated feelings"]},
+ {label:"🔁 By how often", cats:["Weekly","Sometimes","Almost never"]}];
 
 /* ============ state ============ */
 let S=null;
@@ -1134,47 +1159,45 @@ function pile(el){
   el.querySelector("[data-test=to-decide]").onclick=()=>{ snap(); S.phase=2; save(); render(); };
 }
 
+let EXP=null;
 function decide(el){
   const undecided=W.filter(it=>!(it.id in S.dec));
   const keeps=W.filter(it=>S.dec[it.id]==="keep");
   const tosses=W.filter(it=>S.dec[it.id]==="toss");
-  const selIt=(SEL!==null && W[SEL])?W[SEL]:null;
   el.innerHTML='<p class="kicker">Step 2 · save or toss · '+(W.length-undecided.length)+' of '+W.length+' decided</p>'+
   '<h1>Should she keep it?</h1>'+
-  '<p class="lede">Tap an item to read its story, then tap <b>Keep</b> or <b>Let go</b>. Change your mind any time — tap the item again and move it.</p>'+
+  '<p class="lede">Tap 💚 or 🗑️ under each item. Not sure? Tap the picture to read its story. Change your mind any time with ↩.</p>'+
   '<div class="card" id="pool"><p class="mini" style="margin-bottom:8px">'+(undecided.length?'🧺 Still deciding · '+undecided.length:'🧺 All decided!')+'</p><div class="grid">'+
-    undecided.map(it=>'<button class="itile'+(SEL===it.id?" sel":"")+'" data-pool-item="'+it.id+'">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></button>').join("")+
+    undecided.map(it=>{
+      const exp=EXP===it.id;
+      return '<div class="itile'+(exp?" exp":"")+'">'+
+        '<button class="hit" data-exp="'+it.id+'" aria-label="read story">'+svgFor(it)+(exp?"":'<div class="nm">'+esc(it.n)+'</div>')+'</button>'+
+        (exp?'<div class="story"><b style="font-style:normal;color:var(--ink)">'+esc(it.n)+'</b><br>'+esc(it.st)+'</div>':"")+
+        '<div class="minirow"><button class="mk" data-keep="'+it.id+'">💚 Keep</button><button class="mt" data-toss="'+it.id+'">🗑️ Toss</button></div>'+
+      '</div>'; }).join("")+
   '</div></div>'+
-  (selIt?'<div class="card" style="display:flex;gap:12px;align-items:center;border-color:var(--gold)">'+
-    '<div style="flex:0 0 64px">'+svgFor(selIt)+'</div>'+
-    '<div><p style="font-weight:700;color:var(--ink)">'+esc(selIt.n)+'</p>'+
-    '<p style="font-family:Georgia,serif;font-style:italic;font-size:14px;color:var(--mute)">'+esc(selIt.st)+'</p></div></div>':"")+
-  '<div class="shelf" data-shelf-keep="1" role="button" tabindex="0" style="border-color:var(--teal)"><h3 style="color:var(--teal-dk)">💚 Keep — it matters <span class="mini">('+keeps.length+') — tap to place</span></h3><div class="grid">'+
-    keeps.map(it=>'<button class="itile'+(SEL===it.id?" sel":"")+'" data-placed-item="'+it.id+'">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></button>').join("")+
+  '<div class="shelf" style="border-color:var(--teal)"><h3 style="color:var(--teal-dk)">💚 Keeping ('+keeps.length+')</h3><div class="grid">'+
+    keeps.map(it=>'<div class="itile"><button class="unbtn" data-undec="'+it.id+'" aria-label="undo">↩</button>'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></div>').join("")+
   '</div></div>'+
-  '<div class="shelf" data-shelf-toss="1" role="button" tabindex="0" style="border-color:var(--brick)"><h3 style="color:var(--brick)">🗑️ Let go <span class="mini">('+tosses.length+') — tap to place</span></h3><div class="grid">'+
-    tosses.map(it=>'<button class="itile'+(SEL===it.id?" sel":"")+'" data-placed-item="'+it.id+'" style="opacity:.65">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></button>').join("")+
+  '<div class="shelf" style="border-color:var(--brick)"><h3 style="color:var(--brick)">🗑️ Letting go ('+tosses.length+')</h3><div class="grid">'+
+    tosses.map(it=>'<div class="itile" style="opacity:.65"><button class="unbtn" data-undec="'+it.id+'" aria-label="undo">↩</button>'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></div>').join("")+
   '</div></div>'+
   '<div class="tip"><b>Hint:</b> no wrong answers — but you must decide. Deciding what matters IS the analysis (researchers call it <b>coding</b>).</div>'+
-  '<div class="navrow"><span class="mini" style="align-self:center">'+(selIt?'Selected: '+esc(selIt.n):'Nothing selected')+'</span>'+
-  (undecided.length===0?'<button class="btn" data-test="to-groups">Now invent your groups →</button>':'<span></span>')+'</div>';
+  '<div class="navrow"><span></span>'+
+  (undecided.length===0?'<button class="btn" data-test="to-groups">Now invent your groups →</button>':'<span class="mini" style="align-self:center">'+undecided.length+' to go</span>')+'</div>';
 
-  el.querySelectorAll("[data-pool-item],[data-placed-item]").forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    const id=+(b.getAttribute("data-pool-item")??b.getAttribute("data-placed-item"));
-    SEL=(SEL===id?null:id); render(); });
-  const zone=(selName,val)=>{
-    el.querySelector(selName).onclick=()=>{
-      if(SEL===null) return;
-      const id=SEL;
-      snap();
-      if(S.dec[id]===val){ delete S.dec[id]; }   // tap its own zone again = back to the floor
-      else { S.dec[id]=val;
-        if(val==="toss"){ delete S.assign[id]; S.parked=S.parked.filter(x=>x!==id); } }
-      SEL=null; save(); render(); }; };
-  zone("[data-shelf-keep]","keep"); zone("[data-shelf-toss]","toss");
+  el.querySelectorAll("[data-exp]").forEach(b=>b.onclick=()=>{
+    const id=+b.getAttribute("data-exp"); EXP=(EXP===id?null:id); render(); });
+  el.querySelectorAll("[data-keep]").forEach(b=>b.onclick=()=>{
+    snap(); S.dec[+b.getAttribute("data-keep")]="keep"; EXP=null; save(); render(); });
+  el.querySelectorAll("[data-toss]").forEach(b=>b.onclick=()=>{
+    const id=+b.getAttribute("data-toss");
+    snap(); S.dec[id]="toss"; delete S.assign[id]; S.parked=S.parked.filter(x=>x!==id);
+    EXP=null; save(); render(); });
+  el.querySelectorAll("[data-undec]").forEach(b=>b.onclick=()=>{
+    snap(); delete S.dec[+b.getAttribute("data-undec")]; save(); render(); });
   const nx=el.querySelector("[data-test=to-groups]");
-  if(nx) nx.onclick=()=>{ snap(); SEL=null; S.phase=3; save(); render(); };
+  if(nx) nx.onclick=()=>{ snap(); EXP=null; SEL=null; S.phase=3; save(); render(); };
 }
 
 function groups(el){
@@ -1186,8 +1209,8 @@ function groups(el){
   (S.groups.length?S.groups.map((g,i)=>'<span class="gchip">'+esc(g)+' <button data-gdel="'+i+'" aria-label="remove group">✕</button></span>').join(""):'<p class="mini" style="margin-bottom:8px">none yet — add at least 2</p>')+
   '</div>'+
   '<input class="txt" id="gIn" data-test="group-input" maxlength="28" placeholder="Type your own group name, press Enter">'+
-  '<p class="mini" style="margin-bottom:6px">Or tap an example to start from:</p>'+
-  EXAMPLES.map(x=>'<button class="exchip" data-ex="'+esc(x)+'">'+esc(x)+'</button>').join("")+'</div>'+
+  '<p class="mini" style="margin-bottom:6px">Or tap a ready-made system — it adds its categories (edit or delete them freely):</p>'+
+  EXAMPLES.map((x,xi)=>'<button class="exchip" data-ex="'+xi+'"><b>'+x.label+'</b>&nbsp;→ '+x.cats.join(" · ")+'</button>').join("")+'</div>'+
   '<div class="tip"><b>Hint:</b> no two classmates will invent the same groups — by colour, by memory, by “the person she is when she wears it”… Yours only has to be one you can <b>defend</b>.</div>'+
   '<div class="navrow"><span></span><button class="btn" data-test="to-sort" '+(S.groups.length<2?"disabled":"")+'>Sort my things →</button></div>';
   const inp=el.querySelector("#gIn");
@@ -1196,7 +1219,10 @@ function groups(el){
     if(S.groups.some(g=>g.toLowerCase()===name.toLowerCase())){ inp.value=""; return; }
     snap(); S.groups.push(name); save(); render(); }
   inp.onkeydown=e=>{ if(e.key==="Enter") addg(inp.value); };
-  el.querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>addg(b.getAttribute("data-ex")));
+  el.querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>{
+    const set=EXAMPLES[+b.getAttribute("data-ex")]; snap();
+    set.cats.forEach(c=>{ if(S.groups.length<12 && !S.groups.some(g=>g.toLowerCase()===c.toLowerCase())) S.groups.push(c); });
+    save(); render(); });
   el.querySelectorAll("[data-gdel]").forEach(b=>b.onclick=()=>{
     const i=+b.getAttribute("data-gdel");
     const used=Object.values(S.assign).some(list=>list.includes(i));
@@ -1208,50 +1234,100 @@ function groups(el){
   el.querySelector("[data-test=to-sort]").onclick=()=>{ if(S.groups.length>=2){ snap(); S.phase=4; save(); render(); } };
 }
 
-let SEL=null;   // currently selected item id (transient)
+let SEL=null;
+function homes(id){ return S.assign[id]||[]; }
 function sortit(el){
-  const pool=unassigned();
-  const total=kept().length;
-  el.innerHTML='<p class="kicker">Step 4 · sort · '+(total-pool.length)+' of '+total+' placed</p>'+
-  '<h1>Give everything a home</h1>'+
-  '<p class="lede">Tap an item, then tap the group where it lives. Item fits two groups? Tap it again (even on a shelf), then tap the other group. Nothing fits? There’s a shelf for that too.</p>'+
-  '<div class="card" id="pool"><p class="mini" style="margin-bottom:8px">'+(pool.length?'🧺 Still on the floor · '+pool.length:'🧺 Floor is clear!')+'</p><div class="grid">'+
-    pool.map(it=>'<button class="itile'+(SEL===it.id?" sel":"")+'" data-pool-item="'+it.id+'">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></button>').join("")+
-  '</div></div>'+
-  S.groups.map((g,gi)=>{
-    const members=kept().filter(it=>(S.assign[it.id]||[]).includes(gi));
-    return '<div class="shelf" data-shelf="'+gi+'" role="button" tabindex="0"><h3>'+esc(g)+' <span class="mini">('+members.length+') — tap to place here</span></h3><div class="grid">'+
-      members.map(it=>{ const multi=(S.assign[it.id]||[]).length>1;
-        return '<button class="itile'+(SEL===it.id?" sel":"")+'" data-placed-item="'+it.id+'">'+(multi?'<span class="bg">⧉</span>':"")+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></button>'; }).join("")+
-    '</div></div>'; }).join("")+
-  '<div class="shelf" data-shelf-none="1" role="button" tabindex="0" style="border-style:dashed"><h3>🤷 Doesn’t fit any of my groups <span class="mini">— tap to decide</span></h3><div class="grid">'+
-    S.parked.map(id=>W[id]?'<button class="itile'+(SEL===id?" sel":"")+'" data-placed-item="'+id+'"><span class="bg">🅿️</span>'+svgFor(W[id])+'<div class="nm">'+esc(W[id].n)+'</div></button>':"").join("")+
-  '</div></div>'+
-  '<div class="tip"><b>Hint:</b> stuck between two groups, or nothing fits? Good — that’s a real analyst’s moment, and whichever way you decide (both · best fit · park it) is a genuine research decision.</div>'+
-  '<div class="navrow"><span class="mini" style="align-self:center">'+(SEL!==null&&W[SEL]?'Selected: '+esc(W[SEL].n):'Nothing selected')+'</span>'+
-  (pool.length===0?'<button class="btn purple" data-test="sort-done">See the closet →</button>':'<span></span>')+'</div>';
+  if(typeof S.activeG!=="number") S.activeG=0;
+  if(S.activeG>=S.groups.length) S.activeG=0;
+  const items=kept();
+  const unhomed=items.filter(it=>!homes(it.id).length && !S.parked.includes(it.id));
+  const onLeft=S.activeG===-1;
+  const placedN=items.length-unhomed.length;
+  el.innerHTML='<p class="kicker">Step 4 · sort · '+placedN+' of '+items.length+' have a home</p>'+
+  '<h1>Fill the shelves</h1>'+
+  '<p class="lede">Pick a shelf below, then tap every item that belongs on it. Switch shelves and sweep again. Items left over at the end? The 🤷 tab sorts them out.</p>'+
+  '<div id="tabs">'+
+    S.groups.map((g,gi)=>{ const n=items.filter(it=>homes(it.id).includes(gi)).length;
+      return '<button class="tab'+(S.activeG===gi?" on":"")+'" data-tab="'+gi+'">'+esc(g)+' · '+n+'</button>'; }).join("")+
+    '<button class="tab none'+(onLeft?" on":"")+'" data-tab-none="1">🤷 No home · '+unhomed.length+'</button>'+
+  '</div>'+
+  (onLeft? leftoversView(unhomed) : sweepView(items, S.activeG))+
+  '<div class="tip"><b>Hint:</b> an item that fits TWO shelves, or fits none? Good — that’s a real analyst’s moment. Both / best fit / park — whichever you choose is a genuine research decision.</div>'+
+  '<div class="navrow"><span class="mini" style="align-self:center">'+(unhomed.length?unhomed.length+' still need a home':'Everything has a home')+'</span>'+
+  (unhomed.length===0?'<button class="btn purple" data-test="sort-done">See the closet →</button>':'<span></span>')+'</div>';
 
-  el.querySelectorAll("[data-pool-item],[data-placed-item]").forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    const id=+(b.getAttribute("data-pool-item")??b.getAttribute("data-placed-item"));
-    SEL=(SEL===id?null:id); render(); });
+  el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ S.activeG=+b.getAttribute("data-tab"); save(); render(); });
+  const tn=el.querySelector("[data-tab-none]"); if(tn) tn.onclick=()=>{ S.activeG=-1; save(); render(); };
 
-  el.querySelectorAll("[data-shelf]").forEach(sh=>sh.onclick=()=>{
-    if(SEL===null) return;
-    const gi=+sh.getAttribute("data-shelf");
-    const id=SEL, a=S.assign[id]||[];
-    if(S.parked.includes(id)){ snap(); S.parked=S.parked.filter(x=>x!==id); S.assign[id]=[gi]; SEL=null; save(); render(); return; }
-    if(a.length===0){ snap(); S.assign[id]=[gi]; SEL=null; save(); render(); return; }
-    if(a.includes(gi)){ // tap its own shelf again = take it off this shelf
-      snap(); const rest=a.filter(x=>x!==gi);
-      if(rest.length) S.assign[id]=rest; else delete S.assign[id];
-      SEL=null; save(); render(); return; }
-    dilemmaMulti(id,gi);
-  });
-  const none=el.querySelector("[data-shelf-none]");
-  none.onclick=()=>{ if(SEL===null) return; dilemmaNone(SEL); };
+  if(!onLeft){
+    const gi=S.activeG;
+    el.querySelectorAll("[data-sort-item]").forEach(b=>b.onclick=()=>{
+      const id=+b.getAttribute("data-sort-item"); const h=homes(id);
+      if(S.parked.includes(id)){ snap(); S.parked=S.parked.filter(x=>x!==id); S.assign[id]=[gi]; save(); render(); return; }
+      if(h.includes(gi)){ snap(); const rest=h.filter(x=>x!==gi);
+        if(rest.length) S.assign[id]=rest; else delete S.assign[id];
+        save(); render(); return; }
+      if(h.length===0){ snap(); S.assign[id]=[gi]; save(); render(); return; }
+      dilemmaMulti(id,gi);
+    });
+  } else {
+    el.querySelectorAll("[data-lo-park]").forEach(b=>b.onclick=()=>{ const id=+b.getAttribute("data-lo-park");
+      snap(); if(!S.parked.includes(id)) S.parked.push(id); save(); render(); });
+    el.querySelectorAll("[data-lo-toss]").forEach(b=>b.onclick=()=>{ const id=+b.getAttribute("data-lo-toss");
+      snap(); S.lateToss.push(id); delete S.assign[id]; S.parked=S.parked.filter(x=>x!==id); save(); render(); });
+    el.querySelectorAll("[data-lo-new]").forEach(b=>b.onclick=()=>newGroupModal(+b.getAttribute("data-lo-new")));
+    el.querySelectorAll("[data-unpark]").forEach(b=>b.onclick=()=>{ const id=+b.getAttribute("data-unpark");
+      snap(); S.parked=S.parked.filter(x=>x!==id); save(); render(); });
+  }
   const done=el.querySelector("[data-test=sort-done]");
-  if(done) done.onclick=()=>{ snap(); SEL=null; S.phase=5; save(); render(); };
+  if(done) done.onclick=()=>{ snap(); S.phase=5; save(); render(); };
+}
+
+function sweepView(items, gi){
+  return '<div class="card"><p class="mini" style="margin-bottom:8px">Tapping adds to <b style="color:var(--purple-dk)">'+esc(S.groups[gi])+'</b> · tap again to remove · items faded already live on another shelf</p><div class="grid">'+
+    items.map(it=>{
+      const h=homes(it.id); const inAct=h.includes(gi);
+      const elsewhere=(h.length&&!inAct)||S.parked.includes(it.id);
+      const cls=inAct?" active-home":(elsewhere?" inactive-home":"");
+      const badge=inAct&&h.length>1?'<span class="bg">⧉</span>':
+        (elsewhere?'<span class="homebadge">'+(S.parked.includes(it.id)?"🅿️":h.length>1?"⧉ "+h.length:esc(S.groups[h[0]].slice(0,10)))+'</span>':"");
+      return '<button class="itile'+cls+'" data-sort-item="'+it.id+'">'+badge+svgFor(it)+'<div class="nm">'+esc(it.n)+(inAct?" ✓":"")+'</div></button>'; }).join("")+
+  '</div></div>';
+}
+
+function leftoversView(unhomed){
+  let html='<div class="card"><p class="mini" style="margin-bottom:8px">Nothing fits? A classic analyst’s moment — decide for each:</p><div class="grid">'+
+    (unhomed.length? unhomed.map(it=>'<div class="itile">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div>'+
+      '<div class="minirow"><button class="mk" data-lo-new="'+it.id+'">➕ New</button>'+
+      '<button data-lo-park="'+it.id+'" style="background:var(--purple-soft);color:var(--purple-dk)">🅿️ Park</button>'+
+      '<button class="mt" data-lo-toss="'+it.id+'">🗑️ Toss</button></div></div>').join("")
+     :'<p class="mini">Nothing left over — nice.</p>')+
+  '</div></div>';
+  if(S.parked.length){
+    html+='<div class="shelf" style="border-style:dashed"><h3>🅿️ Parked — negative cases <span class="mini">(often your most interesting items)</span></h3><div class="grid">'+
+      S.parked.map(id=>W[id]?'<div class="itile"><button class="unbtn" data-unpark="'+id+'" aria-label="unpark">↩</button>'+svgFor(W[id])+'<div class="nm">'+esc(W[id].n)+'</div></div>':"").join("")+'</div></div>'; }
+  return html;
+}
+
+function newGroupModal(id){
+  const it=W[id];
+  document.querySelectorAll(".modal").forEach(x=>x.remove());
+  const m=document.createElement("div"); m.className="modal";
+  m.addEventListener("click",e=>{ if(e.target===m) m.remove(); });
+  m.innerHTML='<div class="card"><h2>Name the new group</h2>'+
+  '<p style="font-size:14px;margin-bottom:10px">“'+esc(it.n)+'” will be its first resident.'+(S.groups.length>=12?" (Twelve groups is the max — merge or Park instead.)":"")+'</p>'+
+  (S.groups.length>=12?'':'<input class="txt" id="ngIn" data-test="newgroup-input" maxlength="28" placeholder="e.g. Odd ducks">')+
+  '<div class="navrow" style="margin:0"><button class="btn ghost" data-test="newgroup-cancel">Cancel</button>'+
+  (S.groups.length>=12?'':'<button class="btn" data-test="newgroup-create">Create group</button>')+'</div></div>';
+  document.body.appendChild(m);
+  const inp=m.querySelector("#ngIn");
+  if(inp){ inp.focus();
+    const create=()=>{ const name=inp.value.trim(); if(!name) return;
+      snap(); S.groups.push(name); S.parked=S.parked.filter(x=>x!==id);
+      S.assign[id]=[S.groups.length-1]; S.activeG=S.groups.length-1; save(); m.remove(); render(); };
+    inp.onkeydown=e=>{ if(e.key==="Enter") create(); };
+    m.querySelector("[data-test=newgroup-create]").onclick=create; }
+  m.querySelector("[data-test=newgroup-cancel]").onclick=()=>m.remove();
 }
 
 function dilemmaMulti(id,gi){
@@ -1259,48 +1335,14 @@ function dilemmaMulti(id,gi){
   const m=document.createElement("div"); m.className="modal";
   m.addEventListener("click",e=>{ if(e.target===m){ m.remove(); } });
   m.innerHTML='<div class="card"><h2>It fits more than one 🫣</h2>'+
-  '<p style="font-size:14.5px;margin-bottom:10px">“'+esc(it.n)+'” is already in <b>'+esc(S.groups[(S.assign[id]||[0])[0]])+'</b> — and you just tapped <b>'+esc(S.groups[gi])+'</b>. Real coding hits this constantly. Your call:</p>'+
-  '<button class="gbtn" data-test="dm-both">⧉ Put it in <b>both</b><br><span class="mini">multi-coding — honest, and very common</span></button>'+
+  '<p style="font-size:14.5px;margin-bottom:10px">“'+esc(it.n)+'” already lives on <b>'+esc(S.groups[(S.assign[id]||[0])[0]])+'</b> — and you just tapped it for <b>'+esc(S.groups[gi])+'</b>. Real coding hits this constantly. Your call:</p>'+
+  '<button class="gbtn" data-test="dm-both">⧉ Put it on <b>both</b> shelves<br><span class="mini">multi-coding — honest, and very common</span></button>'+
   '<button class="gbtn" data-test="dm-best">🎯 Move it — <b>'+esc(S.groups[gi])+'</b> is the better fit<br><span class="mini">forces you to argue which meaning is primary</span></button>'+
   '<button class="gbtn" data-test="dm-rethink">🛠️ My groups need <b>rethinking</b><br><span class="mini">maybe two groups are really one — go edit them</span></button></div>';
   document.body.appendChild(m);
-  m.querySelector("[data-test=dm-both]").onclick=()=>{ snap(); S.assign[id]=[...(S.assign[id]||[]),gi]; SEL=null; save(); m.remove(); render(); };
-  m.querySelector("[data-test=dm-best]").onclick=()=>{ snap(); S.assign[id]=[gi]; SEL=null; save(); m.remove(); render(); };
-  m.querySelector("[data-test=dm-rethink]").onclick=()=>{ snap(); m.remove(); SEL=null; S.phase=3; save(); render(); };
-}
-
-function dilemmaNone(id){
-  const it=W[id];
-  const m=document.createElement("div"); m.className="modal";
-  m.addEventListener("click",e=>{ if(e.target===m){ m.remove(); } });
-  m.innerHTML='<div class="card"><h2>Nothing fits 🤔</h2>'+
-  '<p style="font-size:14.5px;margin-bottom:10px">“'+esc(it.n)+'” doesn’t belong anywhere in your system. Also a classic moment. Your call:</p>'+
-  '<button class="gbtn" data-test="dn-toss">🗑️ Toss it after all<br><span class="mini">if it truly doesn’t matter — fine. If it does… careful</span></button>'+
-  '<button class="gbtn" data-test="dn-new">➕ Make a <b>new group</b> for it<br><span class="mini">your system grows from the data — very qualitative</span></button>'+
-  '<button class="gbtn" data-test="dn-park">🅿️ <b>Park it</b> and move on<br><span class="mini">a negative case — often your most interesting item</span></button></div>';
-  document.body.appendChild(m);
-  m.querySelector("[data-test=dn-toss]").onclick=()=>{ snap();
-    S.lateToss.push(id); delete S.assign[id]; S.parked=S.parked.filter(x=>x!==id);
-    SEL=null; save(); m.remove(); render(); };
-  m.querySelector("[data-test=dn-new]").onclick=()=>{
-    if(S.groups.length>=12){
-      m.querySelector("[data-test=dn-new]").outerHTML='<p class="mini" style="padding:8px 4px">Twelve groups is the max — merge or use Park instead.</p>';
-      return; }
-    m.querySelector(".card").innerHTML='<h2>Name the new group</h2>'+
-    '<p style="font-size:14px;margin-bottom:10px">“'+esc(it.n)+'” will be its first resident.</p>'+
-    '<input class="txt" id="ngIn" data-test="newgroup-input" maxlength="28" placeholder="e.g. Odd ducks">'+
-    '<div class="navrow" style="margin:0"><button class="btn ghost" data-test="newgroup-cancel">Cancel</button>'+
-    '<button class="btn" data-test="newgroup-create">Create group</button></div>';
-    const inp=m.querySelector("#ngIn"); inp.focus();
-    const create=()=>{ const name=inp.value.trim(); if(!name) return;
-      snap(); S.groups.push(name); S.parked=S.parked.filter(x=>x!==id);
-      S.assign[id]=[S.groups.length-1]; SEL=null; save(); m.remove(); render(); };
-    inp.onkeydown=e=>{ if(e.key==="Enter") create(); };
-    m.querySelector("[data-test=newgroup-create]").onclick=create;
-    m.querySelector("[data-test=newgroup-cancel]").onclick=()=>m.remove(); };
-  m.querySelector("[data-test=dn-park]").onclick=()=>{ snap();
-    delete S.assign[id]; if(!S.parked.includes(id)) S.parked.push(id);
-    SEL=null; save(); m.remove(); render(); };
+  m.querySelector("[data-test=dm-both]").onclick=()=>{ snap(); S.assign[id]=[...(S.assign[id]||[]),gi]; save(); m.remove(); render(); };
+  m.querySelector("[data-test=dm-best]").onclick=()=>{ snap(); S.assign[id]=[gi]; save(); m.remove(); render(); };
+  m.querySelector("[data-test=dm-rethink]").onclick=()=>{ snap(); m.remove(); S.phase=3; save(); render(); };
 }
 
 function closetShelves(state){
