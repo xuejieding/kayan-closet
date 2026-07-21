@@ -1029,26 +1029,19 @@ const CHAR="Ka-Yan";
 const W=[
  {s:"tee",c:"#E15B5B",n:"Red concert tee",st:"From that 2019 concert — it still sings to her."},
  {s:"tee",c:"#F0EEE6",n:"Plain white tee",st:"Goes with everything, means nothing."},
- {s:"tank",c:"#F4C95D",n:"Striped tank top",st:"Beach days and balcony afternoons."},
  {s:"shirt",c:"#8FBFE0",n:"Interview shirt",st:"Ironed. Waiting."},
  {s:"sweater",c:"#EAD9C2",n:"Cream cable sweater",st:"Like wearing a hug."},
  {s:"hoodie",c:"#9A9AA0",n:"Ex's hoodie",st:"Soft. Complicated."},
  {s:"hoodie",c:"#2E9E9F",n:"Team football jacket",st:"A gift from Dad. Number 7 on the back."},
- {s:"puffer",c:"#3D5A80",n:"Navy puffer jacket",st:"Survived two Beijing winters."},
  {s:"coat",c:"#8A6A4F",n:"Winter wool coat",st:"Grandma helped her choose it."},
  {s:"blazer",c:"#33323A",n:"Black blazer",st:"Armour for serious days."},
  {s:"dress",c:"#C4504F",n:"Red silk dress",st:"Worn once — a cousin's wedding."},
  {s:"sundress",c:"#F2B8C6",n:"Pink sundress",st:"Beach trip, two years ago."},
- {s:"teadress",c:"#A9C4A4",n:"Floral tea dress",st:"Bought for a garden party that got cancelled."},
- {s:"skirt",c:"#33323A",n:"Black work skirt",st:"Monday to Friday, faithfully."},
  {s:"jeans",c:"#5B7A9D",n:"Favourite jeans",st:"Fit exactly right. Irreplaceable."},
  {s:"jeans",c:"#3A4C63",n:"Jeans that almost fit",st:"After next month's gym streak, surely."},
  {s:"sneaker",c:"#EDEAE3",n:"White sneakers",st:"“I'll clean them this weekend.”"},
  {s:"heels",c:"#33323A",n:"Black heels",st:"Beautiful. Painful. Twice a year."},
- {s:"boots",c:"#6E4F3A",n:"Winter boots",st:"Stomp-proof since 2021."},
- {s:"sandals",c:"#D9A066",n:"Strappy sandals",st:"Summer's first purchase."},
  {s:"scarf",c:"#C2565E",n:"Grandma's knitted scarf",st:"She made it her last winter."},
- {s:"sunhat",c:"#E8D5A3",n:"Straw sun hat",st:"Makes her feel like a film star."},
  {s:"sock",c:"#E8853D",n:"Single orange sock",st:"Its partner is a mystery."},
  {s:"gown",c:"#3A3944",n:"Graduation gown",st:"One glorious day."},
  {s:"swim",c:"#3E8FC1",n:"Swimsuit",st:"Mostly optimism."}
@@ -1131,7 +1124,7 @@ function render(){
 function welcome(el){
   el.innerHTML='<p class="kicker">SOWK6265 · Qualitative Lab</p>'+
   '<h1>Help '+CHAR+' tidy her closet 🧥</h1>'+
-  '<p class="lede">'+CHAR+' is moving flat, and her closet is chaos. <b>You</b> decide what she keeps, invent a system for it, and defend your choices — and somewhere along the way, you’ll discover you’ve been doing qualitative analysis all along.</p>'+
+  '<p class="lede">'+CHAR+' is moving flat, and her closet is chaos. <b>You</b> decide what she keeps, invent a system for it, and defend your choices. (Why are we doing this in a research methods class? You’ll see.)</p>'+
   '<div class="card"><p style="margin-bottom:8px;color:var(--ink)">And who’s helping her? (your name goes on your version of her closet)</p>'+
   '<input class="txt" id="nameIn" data-test="name" maxlength="24" placeholder="Your name or nickname" value="'+esc(S.name)+'">'+
   '<p class="mini">Everything stays on your device. At the end you get a framed closet + a QR to show YOUR take.</p></div>'+
@@ -1151,10 +1144,10 @@ function welcome(el){
 
 function pile(el){
   el.innerHTML='<p class="kicker">Step 1 · everything out</p>'+
-  '<h1>25 things. One closet. No system.</h1>'+
+  '<h1>18 things. One closet. No system.</h1>'+
   '<p class="lede">Everything '+CHAR+' owns, out on the floor. This is your data: look at all of it — then start deciding.</p>'+
   '<div class="card"><div class="grid">'+W.map(it=>'<div class="itile">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></div>').join("")+'</div></div>'+
-  '<div class="tip"><b>Hint — the research move:</b> MANAGE. Gather everything and look at all of it before touching anything. (In a real study: read every transcript once before coding.)</div>'+
+  '<div class="tip"><b>Hint:</b> look at everything before you touch anything — you can’t organise what you haven’t seen.</div>'+
   '<div class="navrow"><span></span><button class="btn gold" data-test="to-decide">Start sorting →</button></div>';
   el.querySelector("[data-test=to-decide]").onclick=()=>{ snap(); S.phase=2; save(); render(); };
 }
@@ -1182,7 +1175,7 @@ function decide(el){
   '<div class="shelf" style="border-color:var(--brick)"><h3 style="color:var(--brick)">🗑️ Letting go ('+tosses.length+')</h3><div class="grid">'+
     tosses.map(it=>'<div class="itile" style="opacity:.65"><button class="unbtn" data-undec="'+it.id+'" aria-label="undo">↩</button>'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div></div>').join("")+
   '</div></div>'+
-  '<div class="tip"><b>Hint:</b> no wrong answers — but you must decide. Deciding what matters IS the analysis (researchers call it <b>coding</b>).</div>'+
+  '<div class="tip"><b>Hint:</b> no wrong answers — but you must decide. Notice what you’re doing: judging what matters, and for whom.</div>'+
   '<div class="navrow"><span></span>'+
   (undecided.length===0?'<button class="btn" data-test="to-groups">Now invent your groups →</button>':'<span class="mini" style="align-self:center">'+undecided.length+' to go</span>')+'</div>';
 
@@ -1204,14 +1197,14 @@ function groups(el){
   el.innerHTML='<p class="kicker">Step 3 · your system</p>'+
   '<h1>Invent your groups</h1>'+
   '<p class="lede">How will YOU organise what she’s keeping? By colour? Occasion? Season? By who gave it to her? '+
-  '<b>There is no correct set</b> — qualitative analysis is subjective. But you’ll have to defend yours later, so make groups you believe in. Pick 2–12.</p>'+
+  '<b>There is no single inevitable set of categories</b> — but some systems are more coherent, useful, and defensible than others. Make groups you believe in and can defend. Pick 2–12.</p>'+
   '<div class="card"><h2>Your groups</h2><div id="gList">'+
   (S.groups.length?S.groups.map((g,i)=>'<span class="gchip">'+esc(g)+' <button data-gdel="'+i+'" aria-label="remove group">✕</button></span>').join(""):'<p class="mini" style="margin-bottom:8px">none yet — add at least 2</p>')+
   '</div>'+
   '<input class="txt" id="gIn" data-test="group-input" maxlength="28" placeholder="Type your own group name, press Enter">'+
   '<p class="mini" style="margin-bottom:6px">Or tap a ready-made system — it adds its categories (edit or delete them freely):</p>'+
   EXAMPLES.map((x,xi)=>'<button class="exchip" data-ex="'+xi+'"><b>'+x.label+'</b>&nbsp;→ '+x.cats.join(" · ")+'</button>').join("")+'</div>'+
-  '<div class="tip"><b>Hint:</b> no two classmates will invent the same groups — by colour, by memory, by “the person she is when she wears it”… Yours only has to be one you can <b>defend</b>.</div>'+
+  '<div class="tip"><b>Hint:</b> no two classmates will invent the same groups — by colour, by memory, by “the person she is when she wears it”… Different systems are expected. <b>Coherent beats clever</b>: clear meanings, little overlap, groups that could answer a question.</div>'+
   '<div class="navrow"><span></span><button class="btn" data-test="to-sort" '+(S.groups.length<2?"disabled":"")+'>Sort my things →</button></div>';
   const inp=el.querySelector("#gIn");
   function addg(name){ name=name.trim(); if(!name) return;
@@ -1252,7 +1245,7 @@ function sortit(el){
     '<button class="tab none'+(onLeft?" on":"")+'" data-tab-none="1">🤷 No home · '+unhomed.length+'</button>'+
   '</div>'+
   (onLeft? leftoversView(unhomed) : sweepView(items, S.activeG))+
-  '<div class="tip"><b>Hint:</b> an item that fits TWO shelves, or fits none? Good — that’s a real analyst’s moment. Both / best fit / park — whichever you choose is a genuine research decision.</div>'+
+  '<div class="tip"><b>Hint:</b> fits two shelves, or fits none? Don’t rush past those moments — they’re the interesting ones. Remember what you chose; we’ll come back to it.</div>'+
   '<div class="navrow"><span class="mini" style="align-self:center">'+(unhomed.length?unhomed.length+' still need a home':'Everything has a home')+'</span>'+
   (unhomed.length===0?'<button class="btn purple" data-test="sort-done">See the closet →</button>':'<span></span>')+'</div>';
 
@@ -1296,7 +1289,7 @@ function sweepView(items, gi){
 }
 
 function leftoversView(unhomed){
-  let html='<div class="card"><p class="mini" style="margin-bottom:8px">Nothing fits? A classic analyst’s moment — decide for each:</p><div class="grid">'+
+  let html='<div class="card"><p class="mini" style="margin-bottom:8px">Nothing fits? These are often the most interesting things she owns. Decide for each:</p><div class="grid">'+
     (unhomed.length? unhomed.map(it=>'<div class="itile">'+svgFor(it)+'<div class="nm">'+esc(it.n)+'</div>'+
       '<div class="minirow"><button class="mk" data-lo-new="'+it.id+'">➕ New</button>'+
       '<button data-lo-park="'+it.id+'" style="background:var(--purple-soft);color:var(--purple-dk)">🅿️ Park</button>'+
@@ -1304,7 +1297,7 @@ function leftoversView(unhomed){
      :'<p class="mini">Nothing left over — nice.</p>')+
   '</div></div>';
   if(S.parked.length){
-    html+='<div class="shelf" style="border-style:dashed"><h3>🅿️ Parked — negative cases <span class="mini">(often your most interesting items)</span></h3><div class="grid">'+
+    html+='<div class="shelf" style="border-style:dashed"><h3>🅿️ Parked — doesn’t fit yet <span class="mini">(puzzling cases, kept in view)</span></h3><div class="grid">'+
       S.parked.map(id=>W[id]?'<div class="itile"><button class="unbtn" data-unpark="'+id+'" aria-label="unpark">↩</button>'+svgFor(W[id])+'<div class="nm">'+esc(W[id].n)+'</div></div>':"").join("")+'</div></div>'; }
   return html;
 }
@@ -1335,8 +1328,8 @@ function dilemmaMulti(id,gi){
   const m=document.createElement("div"); m.className="modal";
   m.addEventListener("click",e=>{ if(e.target===m){ m.remove(); } });
   m.innerHTML='<div class="card"><h2>It fits more than one 🫣</h2>'+
-  '<p style="font-size:14.5px;margin-bottom:10px">“'+esc(it.n)+'” already lives on <b>'+esc(S.groups[(S.assign[id]||[0])[0]])+'</b> — and you just tapped it for <b>'+esc(S.groups[gi])+'</b>. Real coding hits this constantly. Your call:</p>'+
-  '<button class="gbtn" data-test="dm-both">⧉ Put it on <b>both</b> shelves<br><span class="mini">multi-coding — honest, and very common</span></button>'+
+  '<p style="font-size:14.5px;margin-bottom:10px">“'+esc(it.n)+'” already lives on <b>'+esc(S.groups[(S.assign[id]||[0])[0]])+'</b> — and you just tapped it for <b>'+esc(S.groups[gi])+'</b>. This happens whenever you sort anything that matters. Your call:</p>'+
+  '<button class="gbtn" data-test="dm-both">⧉ Put it on <b>both</b> shelves<br><span class="mini">keep both meanings — honest, and common</span></button>'+
   '<button class="gbtn" data-test="dm-best">🎯 Move it — <b>'+esc(S.groups[gi])+'</b> is the better fit<br><span class="mini">forces you to argue which meaning is primary</span></button>'+
   '<button class="gbtn" data-test="dm-rethink">🛠️ My groups need <b>rethinking</b><br><span class="mini">maybe two groups are really one — go edit them</span></button></div>';
   document.body.appendChild(m);
@@ -1355,7 +1348,7 @@ function closetShelves(state){
         :'<p class="mini">empty</p>')+
       '</div></div>'; }).join("");
   if(state.p && state.p.length){
-    html+='<div class="shelf" style="border-style:dashed"><h3>🅿️ Parked — negative cases</h3><div class="grid">'+
+    html+='<div class="shelf" style="border-style:dashed"><h3>🅿️ Parked — doesn’t fit yet</h3><div class="grid">'+
       state.p.map(id=>W[id]?'<div class="itile">'+svgFor(W[id])+'<div class="nm">'+esc(W[id].n)+'</div></div>':"").join("")+'</div></div>'; }
   return html;
 }
@@ -1372,15 +1365,16 @@ function reveal(el){
   '<div class="stat"><div class="v">'+S.parked.length+'</div><div class="k">parked</div></div></div>'+
   closetShelves(st)+
   '<div class="card"><h2>Plot twist: that was qualitative analysis</h2>'+
-  '<p style="font-size:15px;line-height:2;color:var(--ink)">✂️ Save / toss → <b>coding</b>: deciding what matters<br>'+
-  '🗂️ The groups YOU invented → <b>categories</b> — subjective, and defensible<br>'+
-  '⧉ Fits two groups → <b>multi-coding</b>, a real analyst’s daily choice<br>'+
-  '🅿️ Fits nothing → the <b>negative case</b> — don’t force it; learn from it<br>'+
-  '🚪 This display → <b>representation</b>: order that others can see</p></div>'+
+  '<p style="font-size:15px;line-height:2;color:var(--ink)">✂️ Save / toss → deciding <b>analytic relevance and focus</b> — what matters for your question<br>'+
+  '🗂️ Naming &amp; sorting the groups → <b>coding and categorisation</b><br>'+
+  '⧉ Fits two groups → <b>multi-coding</b>, an everyday analytic judgement<br>'+
+  '🅿️ Fits nothing → an <b>uncategorised, puzzling case</b> — and if it <i>contradicts</i> the pattern you’re building, it may become a <b>negative case</b><br>'+
+  '🚪 This display → <b>representation</b>: order that others can see</p>'+
+  '<p style="font-size:13px;color:var(--mute);margin-top:8px">One place the closet metaphor breaks: unlike tossing clothes, researchers <b>never throw raw data away</b>. The full dataset is kept — you decide which extracts are most relevant to the question.</p></div>'+
   '<div class="card"><h2>One line of reflection</h2>'+
   '<p class="mini" style="margin-bottom:8px">What do your groups say about how YOU read '+CHAR+'’s life? A classmate made totally different ones.</p>'+
   '<input class="txt" id="reflIn" data-test="reflection" maxlength="140" placeholder="My groups show that I…" value="'+esc(S.refl)+'"></div>'+
-  '<div class="tip"><b>Hint:</b> compare with a neighbour — same closet, different system, and neither of you is wrong. That’s qualitative analysis: <b>subjective, but defensible</b>.</div>'+
+  '<div class="tip"><b>Hint:</b> compare with a neighbour — same closet, different systems. Different interpretations are possible, but <b>each must be supported and defensible</b>: do your groups have clear meanings? Do they overlap? What question could your closet answer?</div>'+
   '<div class="navrow"><button class="btn ghost" data-test="back-sort">← Re-sort</button><button class="btn purple" data-test="to-present">Present my closet →</button></div>';
   el.querySelector("#reflIn").oninput=e=>{ S.refl=e.target.value; save(); };
   el.querySelector("[data-test=back-sort]").onclick=()=>{ snap(); S.assign={}; S.parked=[]; S.phase=4; save(); render(); };
